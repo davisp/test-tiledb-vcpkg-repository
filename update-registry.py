@@ -21,7 +21,7 @@ def parse_args():
 
     return parser.parse_args()
 
-def load_vcpkg_json(path):
+def load_json(path):
     if not os.path.isfile(path):
         print("File not found: {}".format(path))
         exit(1)
@@ -55,7 +55,7 @@ def import_package(pkg_name, repo, imported = None):
         pkg_name
     )
     vcpkg_path = os.path.join(port_dir, "vcpkg.json")
-    vcpkg_json = load_vcpkg_json(vcpkg_path)
+    vcpkg_json = load_json(vcpkg_path)
     for dep in vcpkg_dep_packages(vcpkg_json):
         import_package(dep, repo, imported = imported)
 
@@ -79,12 +79,34 @@ def import_package(pkg_name, repo, imported = None):
         os.mkdir(dst_dir)
     shutil.copy2(version_path, dst_path)
 
+def set_baseline(repo):
+    pkg_names = []
+    for pkg_name in os.listdir("ports"):
+        if pkg_name in (".", ".."):
+            continue
+        pkg_names.append(pkg_name)
+    src_baseline = os.path.join(
+        os.path.expanduser(repo),
+        "versions",
+        "baseline.json"
+    )
+    src_versions = load_json(src_baseline)
+    dst_versions = {}
+    for pkg_name in pkg_names:
+        dst_versions[pkg_name] = src_versions["default"][pkg_name]
+    dst_versions = {"default": dst_versions}
+    dst_file = os.path.join("versions", "baseline.json")
+    with open(dst_file, "w") as handle:
+        json.dump(dst_versions, handle, sort_keys=True, indent=2)
+
 def main():
     args = parse_args()
 
-    root = load_vcpkg_json(args.config)
+    root = load_json(args.config)
     for pkg in vcpkg_dep_packages(root):
         import_package(pkg, args.repo)
+
+    set_baseline(args.repo)
 
 if __name__ == "__main__":
     main()
