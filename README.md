@@ -1,17 +1,29 @@
 Test Registry
 ===
 
-I am playing with vpckg.
+This is a test of using vcpkg wiht TileDB.
 
-Importing an Existing Port
+Updating the Registry
 ---
 
+If you have a copy of vcpkg cloned into `~/github/microsoft/vcpkg` you can
+simply run the update command like such:
+
 ```bash
-export VCPKG_ROOT=/path/to/vcpkg
-cp ${VCPKG_ROOT}/ports/$name ports
-# If the version directory doesn't yet exist, create a directory
-# "versions/$X-" where $X is the first letter of the package name.
-mkdir versions/X-
-cp ${VCPKG_ROOT}/versions/X-/$name.json versions/X-/
-git add . && git commit -m "Imported $name at versions $something"
+./update-registry.py ~/path/to/tiledb/vcpkg.json
+```
+
+If your clone of vcpkg is somewhere else on your filesystem, you can do run
+the update command with an extra argument:
+
+```bash
+./update-registry.py --repo=path/to/vcpkg path/to/tiledb/vcpkg.json
+```
+
+After running `./update-registry.py`, take a look to make sure the diff looks
+reasonable on what's being updated. Then you can just run:
+
+```bash
+git add ports/ versions/
+git commit -m "Upgraded repository packages"
 ```
